@@ -28,7 +28,7 @@ class CharactersPageState extends State<CharactersPage> {
   @override
   void initState() {
     super.initState();
-    _bloc = CharactersBloc(getIt(), getIt())
+    _bloc = CharactersBloc(getIt())
       ..add(const CharactersEvent.updateCharacters());
   }
 
