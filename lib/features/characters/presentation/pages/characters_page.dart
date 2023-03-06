@@ -20,67 +20,56 @@ class CharactersPage extends StatefulWidget {
 class CharactersPageState extends State<CharactersPage> {
   late CharactersBloc _bloc;
   final RefreshController _refreshController =
-    RefreshController(initialRefresh: true);
+  RefreshController(initialRefresh: true);
   final GlobalKey _refresherKey = GlobalKey();
   final GlobalKey _contentKey = GlobalKey();
 
-
-  @override
-  void initState() {
-    super.initState();
-    _bloc = CharactersBloc(getIt())
-      ..add(const CharactersEvent.updateCharacters());
-  }
-
-  @override
-  void dispose() {
-    _bloc.close();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
-    return RefreshConfiguration(
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Rick and Morty Characters'),
-        ),
-        body: BlocBuilder<CharactersBloc, CharactersState>(
-          bloc: _bloc,
-          builder: (context, state) {
-            return state.map<Widget>(
+    return BlocProvider<CharactersBloc>(
+      create: (_) => getIt<CharactersBloc>(),
+      child: RefreshConfiguration(
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text('Rick and Morty Characters'),
+          ),
+          body: BlocBuilder<CharactersBloc, CharactersState>(
+            builder: (context, state) {
+              final bloc = context.read<CharactersBloc>();
+              return state.map<Widget>(
                 initial: (state) => Container(),
-                loading: (state) => _loadingState(state, _bloc.add),
-                loaded: (state) => _loadedState(state, _bloc.add),
+                loading: (state) => _loadingState(state, bloc.add),
+                loaded: (state) => _loadedState(state, bloc.add),
                 error: (state) => Text(state.message)
-            );
-          },
+              );
+            },
+          ),
         ),
-      ),
+      )
     );
   }
 
   Widget _loadedState(
       LoadedCharactersState state,
       void Function (CharactersEvent) eventHandler
-  ) {
+      ) {
     _refreshController.refreshCompleted();
 
     return SmartRefresher(
-      key: _refresherKey,
-      controller: _refreshController,
-      enablePullDown: true,
-      onRefresh: () {
-        eventHandler.call(const CharactersEvent.updateCharacters());
-      },
-      child: ListView.builder(
-        key: _contentKey,
-        itemCount: state.characters?.length,
-        itemBuilder: (BuildContext context, int index) {
-          final character = state.characters?.elementAt(index);
-          return character != null ? CharacterWidget(character: character) : null;
-        }
-      )
+        key: _refresherKey,
+        controller: _refreshController,
+        enablePullDown: true,
+        onRefresh: () {
+          eventHandler.call(const CharactersEvent.updateCharacters());
+        },
+        child: ListView.builder(
+          key: _contentKey,
+          itemCount: state.characters?.length,
+          itemBuilder: (BuildContext context, int index) {
+            final character = state.characters?.elementAt(index);
+            return character != null ? CharacterWidget(character: character) : null;
+          }
+        )
     );
   }
 
@@ -89,13 +78,13 @@ class CharactersPageState extends State<CharactersPage> {
       void Function (CharactersEvent) eventHandler
   ) {
     return SmartRefresher(
-      key: _refresherKey,
-      controller: _refreshController,
-      enablePullDown: true,
-      onRefresh: () {
-        eventHandler.call(const CharactersEvent.updateCharacters());
-      },
-      child: ListView.builder(
+        key: _refresherKey,
+        controller: _refreshController,
+        enablePullDown: true,
+        onRefresh: () {
+          eventHandler.call(const CharactersEvent.updateCharacters());
+        },
+        child: ListView.builder(
           key: _contentKey,
           itemCount: state.characters?.length,
           itemBuilder: (BuildContext context, int index) {
@@ -106,7 +95,7 @@ class CharactersPageState extends State<CharactersPage> {
               return null;
             }
           }
-      )
+        )
     );
   }
 }

@@ -16,6 +16,8 @@ class CharactersBloc extends Bloc<CharactersEvent, CharactersState> {
 
   CharactersBloc(this.repository) : super(const CharactersState.initial()) {
     on<UpdateCharactersEvent>(_handeUpdate);
+
+    _onUpdateCharactersEvent();
   }
 
   Future<void> _handeUpdate(UpdateCharactersEvent e, Emitter<CharactersState> emit) async {
@@ -27,6 +29,12 @@ class CharactersBloc extends Bloc<CharactersEvent, CharactersState> {
     subscription = repository.getCharacters().listen((data) {
       emit.call(data.toState());
     });
+  }
+
+  @override
+  Future<void> close() async {
+    await subscription?.cancel();
+    return super.close();
   }
 }
 
